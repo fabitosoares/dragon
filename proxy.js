@@ -15,16 +15,18 @@ app.use('/api', createProxyMiddleware({
         res.setHeader('Access-Control-Allow-Origin', '*'); // Permite qualquer origem (pra teste)
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
         res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+        console.log(`Resposta da API do Hugging Face: ${proxyRes.statusCode} ${proxyRes.statusMessage}`);
     },
     onProxyReq: (proxyReq, req, res) => {
         // Garante que o cabeçalho Authorization seja enviado
         if (req.headers.authorization) {
             proxyReq.setHeader('Authorization', req.headers.authorization);
         }
+        console.log(`Enviando requisição pra API do Hugging Face: ${req.method} ${req.url}`);
     },
     onError: (err, req, res) => {
         console.error('Erro no proxy:', err);
-        res.status(500).send('Erro no proxy');
+        res.status(500).json({ error: 'Erro no proxy', details: err.message });
     }
 }));
 
@@ -42,7 +44,7 @@ app.get('/', (req, res) => {
 });
 
 // Inicia o servidor na porta definida pelo Render
-const PORT = process.env.PORT || 10000; // Usa a porta 10000, que o Render detectou
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
     console.log(`Proxy server rodando na porta ${PORT}`);
 });
