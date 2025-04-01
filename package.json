@@ -1,7 +1,7 @@
 {
-  "name": "dragon-ia-proxy",
+  "name": "dragon-proxy",
   "version": "1.0.0",
-  "description": "Proxy for Dragon IA to bypass CORS",
+  "description": "Proxy server for Hugging Face API",
   "main": "proxy.js",
   "scripts": {
     "start": "node proxy.js"
