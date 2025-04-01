@@ -12,7 +12,7 @@ app.use('/api', createProxyMiddleware({
     },
     onProxyRes: (proxyRes, req, res) => {
         // Adiciona os cabeçalhos CORS necessários
-        res.setHeader('Access-Control-Allow-Origin', 'https://support.fs-cursos.com.br');
+        res.setHeader('Access-Control-Allow-Origin', '*'); // Permite qualquer origem (pra teste)
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
         res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
     },
@@ -21,19 +21,28 @@ app.use('/api', createProxyMiddleware({
         if (req.headers.authorization) {
             proxyReq.setHeader('Authorization', req.headers.authorization);
         }
+    },
+    onError: (err, req, res) => {
+        console.error('Erro no proxy:', err);
+        res.status(500).send('Erro no proxy');
     }
 }));
 
 // Lida com requisições OPTIONS (preflight)
 app.options('/api/*', (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', 'https://support.fs-cursos.com.br');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
     res.sendStatus(204);
 });
 
+// Rota padrão pra confirmar que o servidor tá rodando
+app.get('/', (req, res) => {
+    res.send('Proxy server está rodando!');
+});
+
 // Inicia o servidor na porta definida pelo Render
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000; // Usa a porta 10000, que o Render detectou
 app.listen(PORT, () => {
     console.log(`Proxy server rodando na porta ${PORT}`);
 });
