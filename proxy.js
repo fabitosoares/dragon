@@ -3,18 +3,28 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
 
+// Middleware pra adicionar cabeçalhos CORS em todas as requisições
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Permite qualquer origem (pra teste)
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    next();
+});
+
+// Lida com requisições OPTIONS (preflight)
+app.options('/api/*', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    res.sendStatus(204);
+});
+
 // Configura o proxy pra API do Hugging Face
 app.use('/api', createProxyMiddleware({
     target: 'https://api-inference.huggingface.co',
     changeOrigin: true,
     pathRewrite: {
         '^/api': '', // Remove o prefixo /api da URL
-    },
-    onProxyRes: (proxyRes, req, res) => {
-        // Adiciona os cabeçalhos CORS necessários
-        res.setHeader('Access-Control-Allow-Origin', '*'); // Permite qualquer origem (pra teste)
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
     },
     onProxyReq: (proxyReq, req, res) => {
         // Garante que o cabeçalho Authorization seja enviado
@@ -27,14 +37,6 @@ app.use('/api', createProxyMiddleware({
         res.status(500).send(`Erro no proxy: ${err.message}`);
     }
 }));
-
-// Lida com requisições OPTIONS (preflight)
-app.options('/api/*', (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
-    res.sendStatus(204);
-});
 
 // Rota padrão pra confirmar que o servidor tá rodando
 app.get('/', (req, res) => {
